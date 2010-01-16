@@ -38,6 +38,7 @@ class Signin(db.Model):
 	type = db.StringProperty(required=True)
 	created = db.DateTimeProperty(auto_now_add=True)
 	active = db.BooleanProperty(default=True)
+	join_list = db.BooleanProperty(default=False)
 
 	@classmethod
 	def get_active_staff(cls):
@@ -58,6 +59,11 @@ class MainHandler(webapp.RequestHandler):
 	
 	def post(self):
 		email = self.request.get('email')
+		join_list = self.request.get('join_list')
+		if join_list == 'join':
+			join_list = True
+		else:
+			join_list = False
 		if not '@' in email:
 			email = '%s@hackerdojo.com' % email
 		if email:
@@ -68,6 +74,7 @@ class MainHandler(webapp.RequestHandler):
 			name = email.split('@')[0].replace('.', ' ')
 			say = '%s, %s' % (random.choice(GREETINGS), name.split(' ')[0])
 			text = "Welcome back to Hacker Dojo, %s!" % name.split(' ')[0]
+
 			
 			# If on staff
 			if 'Staff' in self.request.get('type'):
@@ -90,7 +97,7 @@ class MainHandler(webapp.RequestHandler):
 					say = "Welcome to Hacker Dojo!"
 					text = "Congrats on your first visit, %s!" % name
 			
-			s = Signin(email=email, type=self.request.get('type'), image_url=image, name=name)
+			s = Signin(email=email, type=self.request.get('type'), image_url=image, name=name, join_list=join_list)
 			s.put()
 			broadcast(text=text, say=say)
 		self.redirect('/')
