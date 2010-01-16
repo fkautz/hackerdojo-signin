@@ -55,7 +55,12 @@ class Signin(db.Model):
 
 class MainHandler(webapp.RequestHandler):
 	def get(self):
-		self.response.out.write(template.render('templates/main.html', locals()))
+		if self.request.path == '/m':
+			self.response.out.write(template.render('templates/mobile.html', locals()))
+		elif self.request.path == '/mc':
+			self.response.out.write(template.render('templates/mobileconfirm.html', locals()))
+		else:
+			self.response.out.write(template.render('templates/main.html', locals()))
 	
 	def post(self):
 		email = self.request.get('email')
@@ -100,7 +105,10 @@ class MainHandler(webapp.RequestHandler):
 			s = Signin(email=email, type=self.request.get('type'), image_url=image, name=name, join_list=join_list)
 			s.put()
 			broadcast(text=text, say=say)
-		self.redirect('/')
+		if self.request.path == '/m':
+			self.redirect('/mc')
+		else:
+			self.redirect('/')
 
 class StaffHandler(webapp.RequestHandler):
 	def get(self):
@@ -156,6 +164,8 @@ class JSONHandler(webapp.RequestHandler):
 def main():
     application = webapp.WSGIApplication([
         ('/', MainHandler), 
+	('/m', MainHandler), 
+	('/mc', MainHandler), 
 		('/ministaff', MiniStaffHandler),
 		('/staff', StaffHandler),
 		('/open', OpenHandler),
@@ -166,4 +176,3 @@ def main():
  
 if __name__ == '__main__':
     main()
- 
